@@ -26,6 +26,9 @@ class FytaPlantCard extends HTMLElement {
     this._initialized = false;
     this._plant_image = "";
     this._sensor_entities = {battery_entity: "", light_entity: "", moisture_entity: "", salinity_entity: "", temperature_entity: ""};
+    this._status_entities = { plant_status: "", light_status: "", moisture_status: "", salinity_status: "", temperature_status: "" };
+    this._plantStatusColor = { deleted: "white", doing_great: "green", need_attention: "yellow", no_sensor: "white" };
+    this._measurementStatusColor = {no_data: "white", too_low: "red", low: "yellow", perfect: "green", high: "yellow", too_high: "red"};
 
     this._icons = [
       "mdi:battery",
@@ -61,6 +64,31 @@ class FytaPlantCard extends HTMLElement {
     return event;
   }
 
+  _getStateColor(key, hass) {
+    console.debug(`getStateColor - ${key}`);
+    console.debug(`State - ${hass.states[this._status_entities.plant_status].state}, color: ${this._plantStatusColor[hass.states[this._status_entities.plant_status].state]}`);
+    if (key === 'battery_entity') {
+      const state = hass.states[this._status_entities.temperature_status].state;
+      if (state <= 5) {
+        return "red";
+      } else if (state <= 15) {
+        return "yellow";
+      } else {
+        return "white";
+      }
+    } else if (key === 'light_entity') {
+      return this._measurementStatusColor[hass.states[this._status_entities.light_status].state];
+    } else if (key === 'moisture_entity') {
+      return this._measurementStatusColor[hass.states[this._status_entities.moisture_status].state];
+    } else if (key === 'salinity_entity') {
+      return this._measurementStatusColor[hass.states[this._status_entities.salinity_status].state];
+    } else if (key === 'temperature_entity') {
+      return this._measurementStatusColor[hass.states[this._status_entities.temperature_status].state];
+    } else if (key === 'plant') {
+      return this._plantStatusColor[hass.states[this._status_entities.plant_status].state];
+    }
+  }
+
   getCardSize() {
     return 3;
   }
@@ -82,7 +110,6 @@ class FytaPlantCard extends HTMLElement {
       return html`<hui-warning>No device specified</hui-warning>`;
     }
     if (!this._initialized) {
-      console.debug(`Entities not (yet) set/initialized.`);
       this.updateEntities(this.config.device_id, hass)
     }
 
@@ -91,11 +118,10 @@ class FytaPlantCard extends HTMLElement {
     let _title = config.title;
 
     this.shadowRoot.getElementById("box").innerHTML = `
-      <div class="title">${_title}</div>
+      <div class="title" style="color:${this._getStateColor("plant", hass)};">${_title}</div>
       <div id="sensors">
       </div>
     `;
-
 
     const sensorKeys = ['battery_entity', 'light_entity', 'moisture_entity', 'temperature_entity', 'salinity_entity'];
     sensorKeys.forEach(key => {
@@ -118,7 +144,7 @@ class FytaPlantCard extends HTMLElement {
 
         this.shadowRoot.getElementById("sensors").innerHTML += `
           <div id="sensor_${key}" class="sensor">
-            <div class="icon"><ha-icon icon="${_icon}"></ha-icon></div>
+            <div class="icon" style="color:${this._getStateColor(key, hass)};"><ha-icon icon="${_icon}"></ha-icon></div>
             <div class="${_class}">${_state}</div>
             <div class="uom">${_uom}</div>
           </div>
@@ -138,15 +164,16 @@ class FytaPlantCard extends HTMLElement {
       throw new Error("Invalid configuration");
     }
 
+    const oldDevice = this?.config?.device_id;
+    this.config = config;
+
     if (!config.device_id) {
       throw new Error("You need to define a device");
     }
 
-    if (this.config.device_id != config.device_id) {
+    if (this.config.device_id != oldDevice) {
       this._initialized = false;
     }
-
-    this.config = config;
   }
 
   updateEntities(device_id, hass) {
@@ -234,10 +261,6 @@ class FytaPlantCard extends HTMLElement {
       .state-problem {
         color: var(--accent-color);
       }
-
-      .uom {
-        color: var(--primary-text-color);
-      }
     `;
 
     content.id = "container";
@@ -252,11 +275,9 @@ class FytaPlantCard extends HTMLElement {
     root.appendChild(card);
 
     this._initialized = true;
-    console.debug(`Initialized: ${this._initialized}`);
   }
 
   getEntityId(id, hass) {
-    console.debug(`Entity id: ${id}, attribute values: ${Object.values(hass.states[id].attributes)}`);
     if (hass.states[id].attributes.device_class == 'battery' && id.startsWith('sensor.')) {
       const entityId = hass.states[id].entity_id;
       this._sensor_entities.battery_entity = entityId;
@@ -274,7 +295,18 @@ class FytaPlantCard extends HTMLElement {
       this._sensor_entities.light_entity = entityId;
     } else if (id.startsWith('image.')) {
       this._plant_image =  hass.states[id].attributes.entity_picture;
-      console.debug(`Image entity: ${id}, image: ${this._plant_image}`);
+    } else if (hass.states[id].attributes.device_class == 'enum') {
+      if (hass.entities[id].translation_key === 'plant_status') {
+        this._status_entities.plant_status = hass.states[id].entity_id;
+      } else if (hass.entities[id].translation_key === 'light_status') {
+        this._status_entities.light_status = hass.states[id].entity_id;
+      } else if (hass.entities[id].translation_key === 'moisture_status') {
+        this._status_entities.moisture_status = hass.states[id].entity_id;
+      } else if (hass.entities[id].translation_key === 'salinity_status') {
+        this._status_entities.salinity_status = hass.states[id].entity_id;
+      } else if (hass.entities[id].translation_key === 'temperature_status') {
+        this._status_entities.temperature_status = hass.states[id].entity_id;
+      }
     }
   }
 }
