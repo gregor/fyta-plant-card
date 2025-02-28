@@ -3,6 +3,8 @@ Custom card to display information of [Fyta plants](https://fyta.de/) on your Ho
 
 You will need the [Fyta integration](https://www.home-assistant.io/integrations/fyta/) installed to use this card.
 
+![Screenshot](https://raw.githubusercontent.com/dontinelli/fyta-plant-card/main/images/card-image.png)
+
 ## Preliminary note
 
 Please note that this card still is in (early) development. Please report any bugs or malfunctions of the custom card [here](https://github.com/dontinelli/fyta-plant-card/issues). For problems with the fyta integration itself, please use the issue-tracker of the integration.
