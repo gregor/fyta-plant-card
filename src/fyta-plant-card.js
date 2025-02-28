@@ -255,7 +255,6 @@ class FytaPlantCard extends HTMLElement {
 
       ha-icon {
         cursor: pointer;
-        color: var(--primary-color);
       }
 
       .state-problem {
