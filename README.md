@@ -1,4 +1,4 @@
-# HomeAssistant Fyta Plant Card
+# Home Assistant Fyta Plant Card
 Custom card to display information of [Fyta plants](https://fyta.de/) on your Home Assistant dashboard.
 
 You will need the [Fyta integration](https://www.home-assistant.io/integrations/fyta/) installed to use this card.
@@ -37,15 +37,29 @@ The FYTA Plant Card displays data from the FYTA integration in Home Assistant, s
 - Plant status with color-coded indicators
 - Interactive elements that show detailed information when clicked
 
-### HomeAssistant Integration
+### Home Assistant Integration
 
 This card requires the official [Home Assistant FYTA integration](https://www.home-assistant.io/integrations/fyta/). For more information about FYTA, please refer to the [FYTA GitHub page](https://github.com/FYTA-GmbH) or the [FYTA webpage](https://www.fyta.de).
 
 ## Installation
 
+This can be installed manually or through HACS.
+
+### Via HACS
+* Add this repo as a "Custom repository" with type "Dashboard"
+  * Click HACS in your Home Assistnat
+  * Click Frontend
+  * Click the 3 dots in the top right corner and select "Custom Repositories"
+  * Add the URL to this github repository and type "Dashboard"
+* Click "Install" in the new "Flower Card" card in HACS.
+* Wait for install to complete
+* You should not need to restart Home Assistant, but will probably need to refresh the frontend and/or "shift-reload" to refresh the browser cache.
+
+### Manual Installation
+
 1. Download `fyta-plant-card.js` from the [latest release](https://github.com/dontinelli/fyta-plant-card/releases).
-2. Using the File editor add-on, create the `config/www` folder if it doesn't exist yet, and upload the file to this folder.
-3. Ensure you have advanced mode enabled (accessible via your username in the bottom left corner)
+2. Copy the file to the the `config/www` folder of your Home Assistant installation. This can for example be done using the File editor add-on. Create the `config/www` folder if it doesn't exist yet.
+3. Ensure you have advanced mode enabled (accessible via your username in the bottom left corner).
 4. Go to any dashboard where you have edit rights, click on "Edit" in the top right corner, then click the three dots menu and select "Manage resources".
 5. Add `/local/fyta-plant-card.js` with type JS module.
 6. Refresh the page or restart Home Assistant for the card to appear in your dashboard. If the card doesn't appear, try clearing your browser cache.
