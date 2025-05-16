@@ -46,12 +46,12 @@ const MEASUREMENT_STATUS_STATES = {
 };
 
 const MEASUREMENT_STATUS_COLORS = {
-  [MEASUREMENT_STATUS_STATES.NoData]: 'var(--disabled-text-color, #808080)',
-  [MEASUREMENT_STATUS_STATES.TooLow]: 'var(--error-color, #F44336)',
-  [MEASUREMENT_STATUS_STATES.Low]: 'var(--warning-color, #FFC107)',
-  [MEASUREMENT_STATUS_STATES.Perfect]: 'var(--success-color, #4CAF50)',
-  [MEASUREMENT_STATUS_STATES.High]: 'var(--warning-color, #FFC107)',
-  [MEASUREMENT_STATUS_STATES.TooHigh]: 'var(--error-color, #F44336)',
+  [MEASUREMENT_STATUS_STATES.NoData]: 'var(--disabled-text-color, #bdbdbd)',
+  [MEASUREMENT_STATUS_STATES.TooLow]: 'var(--red-color, #f44336)',
+  [MEASUREMENT_STATUS_STATES.Low]: 'var(--orange-color, #ff9800)',
+  [MEASUREMENT_STATUS_STATES.Perfect]: 'var(--green-color, #4caf50)',
+  [MEASUREMENT_STATUS_STATES.High]: 'var(--orange-color, #ff9800)',
+  [MEASUREMENT_STATUS_STATES.TooHigh]: 'var(--red-color, #f44336)',
 };
 
 const ORDER_OPTIONS = [
@@ -70,10 +70,10 @@ const PLANT_STATUS_STATES = {
 };
 
 const PLANT_STATUS_COLORS = {
-  [PLANT_STATUS_STATES.Deleted]: 'var(--text-color, #FFFFFF)',
-  [PLANT_STATUS_STATES.DoingGreat]: 'var(--success-color, #4CAF50)',
-  [PLANT_STATUS_STATES.NeedAttention]: 'var(--warning-color, #FFC107)',
-  [PLANT_STATUS_STATES.NoSensor]: 'var(--disabled-text-color, #808080)',
+  [PLANT_STATUS_STATES.Deleted]: 'var(--disabled-text-color, #bdbdbd)',
+  [PLANT_STATUS_STATES.DoingGreat]: 'var(--green-color, #4caf50)',
+  [PLANT_STATUS_STATES.NeedAttention]: 'var(--orange-color, #ff9800)',
+  [PLANT_STATUS_STATES.NoSensor]: 'var(--disabled-text-color, #bdbdbd)',
 };
 
 const SCHEMA = [
@@ -458,7 +458,7 @@ class FytaPlantCard extends HTMLElement {
         return PLANT_STATUS_COLORS[state];
       }
       default: {
-        return 'var(--primary-text-color, #FFFFFF)';
+        return 'var(--primary-text-color, #ffffff)';
       }
     }
   }
@@ -727,7 +727,7 @@ class FytaPlantCard extends HTMLElement {
       }
 
       .header > #scientific-name {
-        color: #8c96a5;
+        color: var(--secondary-text-color, #727272);
         text-wrap: nowrap;
         text-overflow: ellipsis;
         display: inline-block;
@@ -772,7 +772,7 @@ class FytaPlantCard extends HTMLElement {
 
       .meter {
         height: 8px;
-        background-color: var(--primary-background-color);
+        background-color: var(--primary-background-color, #fafafa);
         border-radius: 2px;
         margin-right: 8px;
         display: inline-grid;
@@ -785,27 +785,28 @@ class FytaPlantCard extends HTMLElement {
         grid-row: 1;
         grid-column: 1;
         height: 100%;
+        background-color: var(--primary-text-color, #212121);
       }
 
       .meter > .good {
-        background-color: rgba(43,194,83,1);
+        background-color: var(--green-color, #4caf50);
       }
 
       .meter > .bad {
-        background-color: rgba(240,163,163);
+        background-color: var(--red-color, #f44336);
       }
 
       .meter > .warning {
-        background-color: rgba(255,193,7,1);
+        background-color: var(--orange-color, #ff9800);
       }
 
       .meter > .unavailable {
-        background-color: rgba(158,158,158,1);
+        background-color: var(--grey-color, #9e9e9e);
       }
 
       .divider {
         height: 1px;
-        background-color: #727272;
+        background-color: var(--secondary-text-color, #727272);
         opacity: 0.25;
         margin-left: 8px;
         margin-right: 8px;
@@ -824,8 +825,8 @@ class FytaPlantCard extends HTMLElement {
         left: 50%;
         -webkit-transform: translateX(-50%) translateY(-180%);
         transform: translateX(-50%) translateY(-180%);
-        background: grey;
-        color: white;
+        background-color: var(--grey-color, #9e9e9e);
+        color: var(--white-color, #ffffff);
         white-space: nowrap;
         z-index: 2;
         border-radius: 2px;
@@ -845,7 +846,7 @@ class FytaPlantCard extends HTMLElement {
       }
 
       .uom {
-        color: var(--secondary-text-color);
+        color: var(--secondary-text-color, #727272);
         font-size: 0.9em;
         flex-shrink: 0;
         text-align: left;
@@ -992,7 +993,7 @@ class FytaPlantCard extends HTMLElement {
       { threshold: -Infinity, icon: 'mdi:battery-alert-variant-outline', color: 'var(--state-sensor-battery-low-color, #f44336)', statusText: BATTERY_STATUS_TEXT.Unknown },
     ];
 
-    const { icon, color, statusText } = thresholdLevels.find(({ threshold }) => state >= threshold) ||  { icon: 'mdi:battery-alert-variant-outline', color: 'var(--error-color, #F44336)', statusText: BATTERY_STATUS_TEXT.Unknown };
+    const { icon, color, statusText } = thresholdLevels.find(({ threshold }) => state >= threshold) ||  { icon: 'mdi:battery-alert-variant-outline', color: 'var(--red-color, #f44336)', statusText: BATTERY_STATUS_TEXT.Unknown };
 
     return `
       <div class="battery tooltip" @click="${this._click.bind(this, entityId)}">
