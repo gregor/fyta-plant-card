@@ -650,8 +650,7 @@ class FytaPlantCard extends HTMLElement {
 
   _handleEntities(hass, device_id) {
     Object.keys(hass.entities)
-      .filter(id => hass.entities[id].device_id === device_id)
-      .forEach(id => this._handleEntity(id, hass), this);
+      .filter((id) => hass.entities[id].device_id === device_id)
       .forEach((id) => this._handleEntity(id, hass), this);
   }
 
