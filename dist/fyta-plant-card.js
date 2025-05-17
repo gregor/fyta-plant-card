@@ -318,7 +318,7 @@ const parseConfig = (config) => {
 };
 
 
-class FytaPlantCard extends HTMLElement {
+class FytaPlantCard extends LitElement {
   static getConfigElement() {
     return document.createElement('fyta-plant-card-editor');
   }
@@ -566,42 +566,8 @@ class FytaPlantCard extends HTMLElement {
       .forEach((id) => this._handleEntity(id, hass), this);
   }
 
-  _updateEntities(deviceId, hass) {
-    if (!hass) {
-      console.debug(`hass not set.`);
-      return;
-    }
-    if (!deviceId) {
-      console.debug(`device_id not set.`);
-      return;
-    }
-
-    const device = hass.devices[deviceId];
-
-    // Create a new config object with all defaults
-    if (!this.config?.title || this.config.title === '') {
-      const newConfig = {
-        ...DEFAULT_CONFIG,
-        ...this.config,
-        device_id: deviceId || '',
-        title: device.name,
-      };
-
-      this.config = newConfig;
-    }
-
-    this._handleEntities(hass, deviceId);
-
-    const root = this.shadowRoot;
-    if (root.lastChild) {
-      root.removeChild(root.lastChild);
-    }
-
-    const card = document.createElement('ha-card');
-    const content = document.createElement('div');
-    const style = document.createElement('style');
-
-    style.textContent = `
+  static get styles() {
+    return css`
       ha-card {
         position: relative;
         padding: 0;
@@ -851,6 +817,41 @@ class FytaPlantCard extends HTMLElement {
         padding: 2px 16px 4px;
       }
     `;
+  }
+
+  _updateEntities(deviceId, hass) {
+    if (!hass) {
+      console.debug(`hass not set.`);
+      return;
+    }
+    if (!deviceId) {
+      console.debug(`device_id not set.`);
+      return;
+    }
+
+    const device = hass.devices[deviceId];
+
+    // Create a new config object with all defaults
+    if (!this.config?.title || this.config.title === '') {
+      const newConfig = {
+        ...DEFAULT_CONFIG,
+        ...this.config,
+        device_id: deviceId || '',
+        title: device.name,
+      };
+
+      this.config = newConfig;
+    }
+
+    this._handleEntities(hass, deviceId);
+
+    const root = this.shadowRoot;
+    if (root.lastChild) {
+      root.removeChild(root.lastChild);
+    }
+
+    const card = document.createElement('ha-card');
+    const content = document.createElement('div');
 
     content.id = 'container';
     content.className = this.config.display_mode === DisplayMode.COMPACT ? 'compact-mode' : '';
@@ -872,7 +873,6 @@ class FytaPlantCard extends HTMLElement {
       </div>
     `;
     card.appendChild(content);
-    card.appendChild(style);
     root.appendChild(card);
 
     // Set up event delegation for click handlers
@@ -1334,13 +1334,13 @@ export class FytaPlantCardEditor extends LitElement {
 
     newItems.splice(newIndex, 0, newItems.splice(oldIndex, 1)[0]);
 
-    const event = new Event('orders-changed', {
+    const newEvent = new Event('orders-changed', {
       bubbles: true,
       composed: true,
     });
-    event.detail = { items: newItems };
+    newEvent.detail = { items: newItems };
     this.items = newItems;
-    this.dispatchEvent(event);
+    this.dispatchEvent(newEvent);
   }
 
   _valueChanged(event) {
@@ -1416,8 +1416,8 @@ export class FytaPlantCardEditor extends LitElement {
           if (device && device.name) {
             newConfig.title = device.name;
           }
-        } catch (e) {
-          console.error('Error setting title from selected device:', e);
+        } catch (error) {
+          console.error('Error setting title from selected device:', error);
         }
       }
     }
@@ -1568,8 +1568,8 @@ export class FytaPlantCardEditor extends LitElement {
         if (device && device.name) {
           newConfig.title = device.name;
         }
-      } catch (e) {
-        console.error('Error setting title from selected device:', e);
+      } catch (error) {
+        console.error('Error setting title from selected device:', error);
       }
     }
 
