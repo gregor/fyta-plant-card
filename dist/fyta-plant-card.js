@@ -5,78 +5,67 @@ const html = LitElement.prototype.html;
 const css = LitElement.prototype.css;
 
 const DEFAULT_CONFIG = {
-  device_id: '',
-  title: '',
-  display_mode: 'full',
-  state_color: true,
   battery_threshold: 30,
-  show_light: true,
-  light_order: '2',
-  show_moisture: true,
-  moisture_order: '1',
-  show_temperature: true,
-  temperature_order: '3',
-  show_salinity: false,
-  salinity_order: '5',
-  show_nutrition: true,
-  nutrition_order: '4',
+  device_id: '',
+  display_mode: 'full',
+  enabled_sensors: [
+    'light',
+    'moisture',
+    'temperature',
+    'nutrition',
+  ],
   show_scientific_name: true,
-  state_color_plant: true,
-  state_color_sensor: true,
+  state_color_battery: true,
   state_color_icon: true,
+  state_color_plant: 'image',
+  state_color_sensor: true,
+  state_color: true,
+  title: '',
 };
 
-const DEVICE_CLASS = {
-  Battery: 'battery',
-  Conductivity: 'conductivity',
-  Date: 'date',
-  Enum: 'enum',
-  Light: 'light',
-  Moisture: 'moisture',
-  Temperature: 'temperature',
+const DeviceClass = {
+  BATTERY: 'battery',
+  CONDUCTIVITY: 'conductivity',
+  DATE: 'date',
+  ENUM: 'enum',
+  LIGHT: 'light',
+  MOISTURE: 'moisture',
+  TEMPERATURE: 'temperature',
 };
 
-const MEASUREMENT_STATUS_STATES = {
-  NoData: 'no_data',
-  TooLow: 'too_low',
-  Low: 'low',
-  Perfect: 'perfect',
-  High: 'high',
-  TooHigh: 'too_high',
+const MeasurementStatusStates = {
+  NO_DATA: 'no_data',
+  TOO_LOW: 'too_low',
+  LOW: 'low',
+  PERFECT: 'perfect',
+  HIGH: 'high',
+  TOO_HIGH: 'too_high',
 };
 
-const MEASUREMENT_STATUS_COLORS = {
-  [MEASUREMENT_STATUS_STATES.NoData]: 'var(--disabled-text-color, #bdbdbd)',
-  [MEASUREMENT_STATUS_STATES.TooLow]: 'var(--red-color, #f44336)',
-  [MEASUREMENT_STATUS_STATES.Low]: 'var(--orange-color, #ff9800)',
-  [MEASUREMENT_STATUS_STATES.Perfect]: 'var(--green-color, #4caf50)',
-  [MEASUREMENT_STATUS_STATES.High]: 'var(--orange-color, #ff9800)',
-  [MEASUREMENT_STATUS_STATES.TooHigh]: 'var(--red-color, #f44336)',
+const MeasureMentStatusColors = {
+  [MeasurementStatusStates.NO_DATA]: 'var(--disabled-text-color, #bdbdbd)',
+  [MeasurementStatusStates.TOO_LOW]: 'var(--red-color, #f44336)',
+  [MeasurementStatusStates.LOW]: 'var(--orange-color, #ff9800)',
+  [MeasurementStatusStates.PERFECT]: 'var(--green-color, #4caf50)',
+  [MeasurementStatusStates.HIGH]: 'var(--orange-color, #ff9800)',
+  [MeasurementStatusStates.TOO_HIGH]: 'var(--red-color, #f44336)',
 };
 
-const ORDER_OPTIONS = [
-  { label: 'Order 1 (First)', value: '1' },
-  { label: 'Order 2', value: '2' },
-  { label: 'Order 3', value: '3' },
-  { label: 'Order 4', value: '4' },
-  { label: 'Order 5 (Last)', value: '5' },
-];
-
-const PLANT_STATUS_STATES = {
-  Deleted: 'deleted',
-  DoingGreat: 'doing_great',
-  NeedAttention: 'need_attention',
-  NoSensor: 'no_sensor',
+const PlantStatusStates = {
+  DELETED: 'deleted',
+  DOING_GREAT: 'doing_great',
+  NEED_ATTENTION: 'need_attention',
+  NO_SENSOR: 'no_sensor',
 };
 
-const PLANT_STATUS_COLORS = {
-  [PLANT_STATUS_STATES.Deleted]: 'var(--disabled-text-color, #bdbdbd)',
-  [PLANT_STATUS_STATES.DoingGreat]: 'var(--green-color, #4caf50)',
-  [PLANT_STATUS_STATES.NeedAttention]: 'var(--orange-color, #ff9800)',
-  [PLANT_STATUS_STATES.NoSensor]: 'var(--disabled-text-color, #bdbdbd)',
+const PlantStautsColors = {
+  [PlantStatusStates.DELETED]: 'var(--disabled-text-color, #bdbdbd)',
+  [PlantStatusStates.DOING_GREAT]: 'var(--green-color, #4caf50)',
+  [PlantStatusStates.NEED_ATTENTION]: 'var(--orange-color, #ff9800)',
+  [PlantStatusStates.NO_SENSOR]: 'var(--disabled-text-color, #bdbdbd)',
 };
 
-const SCHEMA = [
+const SCHEMA_EDITOR = [
   {
     name: 'header_device',
     type: 'constant',
@@ -100,135 +89,6 @@ const SCHEMA = [
     },
   },
   {
-    name: 'header_measurements',
-    type: 'constant',
-    label: 'Sensor Measurements',
-  },
-  {
-    name: 'battery_threshold',
-    label: 'Battery Threshold (%)',
-    selector: {
-      number: {
-        min: 0,
-        max: 100,
-        step: 5,
-        mode: 'slider',
-      },
-    },
-    default: 10,
-  },
-  {
-    type: 'grid',
-    schema: [
-      {
-        name: 'show_moisture',
-        label: 'Soil Moisture',
-        selector: { boolean: {} },
-      },
-      {
-        name: 'moisture_order',
-        label: 'Moisture Order',
-        selector: {
-          select: {
-            options: ORDER_OPTIONS,
-            mode: 'dropdown',
-          },
-        },
-        default: '1',
-      },
-    ],
-  },
-  {
-    type: 'grid',
-    schema: [
-      {
-        name: 'show_light',
-        label: 'Light',
-        selector: { boolean: {} },
-      },
-      {
-        name: 'light_order',
-        label: 'Light Order',
-        selector: {
-          select: {
-            options: ORDER_OPTIONS,
-            mode: 'dropdown',
-          },
-        },
-        default: '2',
-      },
-    ],
-  },
-  {
-    type: 'grid',
-    schema: [
-      {
-        name: 'show_temperature',
-        label: 'Ambient Temperature',
-        selector: { boolean: {} },
-      },
-      {
-        name: 'temperature_order',
-        label: 'Temperature Order',
-        selector: {
-          select: {
-            options: ORDER_OPTIONS,
-            mode: 'dropdown',
-          },
-        },
-        default: '3',
-      },
-    ],
-  },
-  {
-    type: 'grid',
-    schema: [
-      {
-        name: 'show_nutrition',
-        label: 'Nutrition',
-        selector: { boolean: {} },
-      },
-      {
-        name: 'nutrition_order',
-        label: 'Nutrition Order',
-        selector: {
-          select: {
-            options: ORDER_OPTIONS,
-            mode: 'dropdown',
-          },
-        },
-        default: '4',
-      },
-    ],
-  },
-  {
-    type: 'grid',
-    schema: [
-      {
-        name: 'show_salinity',
-        label: 'Salinity',
-        selector: { boolean: {} },
-      },
-      {
-        name: 'salinity_order',
-        label: 'Salinity Order',
-        selector: {
-          select: {
-            options: ORDER_OPTIONS,
-            mode: 'dropdown',
-          },
-        },
-        default: '5',
-      },
-    ],
-  },
-  {
-    name: 'nutrition_info',
-    type: 'constant',
-    label: 'Nutrition and Salinity',
-    value: 'The Nutrition Score combines multiple measurements (salinity, conductivity, growth data, and fertilization timing) into a single metric. Showing salinity separately is generally not needed as it is already included in this score.',
-  },
-  {
     name: 'header_layout',
     type: 'constant',
     label: 'Layout',
@@ -248,6 +108,21 @@ const SCHEMA = [
     default: 'full',
   },
   {
+    name: 'state_color_plant',
+    label: 'Expose plant state',
+    selector: {
+      select: {
+        options: [
+          { label: 'Name Color', value: 'name' },
+          { label: 'Image Halo', value: 'image' },
+          { label: 'Disabled', value: 'disabled' },
+        ],
+        mode: 'box',
+      },
+    },
+    default: 'full',
+  },
+  {
     type: 'grid',
     schema: [
       {
@@ -257,8 +132,8 @@ const SCHEMA = [
         selector: { boolean: {} },
       },
       {
-        name: 'state_color_plant',
-        label: 'Show plant state color',
+        name: 'state_color_battery',
+        label: 'Show battery state color',
         selector: { boolean: {} },
       },
     ],
@@ -278,64 +153,88 @@ const SCHEMA = [
       },
     ],
   },
+  {
+    name: 'header_measurements',
+    type: 'constant',
+    label: 'Sensor Measurements',
+  },
+  {
+    name: 'battery_threshold',
+    label: 'Battery Threshold (%)',
+    selector: {
+      number: {
+        min: 0,
+        max: 100,
+        step: 5,
+        mode: 'slider',
+      },
+    },
+    default: 10,
+  },
 ];
 
-const SENSOR_TYPES = {
-  Battery: 'battery',
-  FertilizedLast: 'fertilizedLast',
-  FertilizedNext: 'fertilizedNext',
-  Light: 'light',
-  LightState: 'light',
-  Moisture: 'moisture',
-  MoistureState: 'moisture',
-  Nutrients: 'nutrients',
-  NutrientsState: 'nutrients',
-  PlantState: 'plant',
-  Salinity: 'salinity',
-  SalinityState: 'salinity',
-  ScientificName: 'scientificName',
-  Temperature: 'temperature',
-  TemperatureState: 'temperature',
+const SCHEMA_CONSTANT = {
+  label: 'Nutrition and Salinity',
+  value: 'The Nutrition Score combines multiple measurements (salinity, conductivity, growth data, and fertilization timing) into a single metric. Showing salinity separately is generally not needed as it is already included in this score.',
+}
+
+const SensorTypes = {
+  BATTERY: 'battery',
+  FERTILIZED_LAST: 'fertilizedLast',
+  FERTILIZED_NEXT: 'fertilizedNext',
+  LIGHT: 'light',
+  LIGHT_STATE: 'light',
+  MOISTURE: 'moisture',
+  MOISTURE_STATE: 'moisture',
+  NUTRIENTS: 'nutrients',
+  NUTRIENT_STATE: 'nutrients',
+  PLANT_STATE: 'plant',
+  SALINITY: 'salinity',
+  SALINITY_STATE: 'salinity',
+  SCIENTIFIC_NAME: 'scientificName',
+  TEMPERATURE: 'temperature',
+  TEMPERATURE_STATE: 'temperature',
 };
 
 const SENSOR_SETTINGS = {
-  [SENSOR_TYPES.Battery]: {
+  [SensorTypes.BATTERY]: {
     min: 0,
     max: 100,
     icon: 'mdi:battery',
     name: 'Battery',
   },
-  [SENSOR_TYPES.Light]: {
+  [SensorTypes.LIGHT]: {
     icon: 'mdi:white-balance-sunny',
     name: 'Light',
   },
-  [SENSOR_TYPES.Moisture]: {
+  [SensorTypes.MOISTURE]: {
     min: 0,
     max: 100,
     icon: 'mdi:water',
     name: 'Soil Moisture',
   },
-  [SENSOR_TYPES.Nutrients]: {
+  [SensorTypes.NUTRIENTS]: {
     icon: 'mdi:bucket',
     name: 'Nutrition',
   },
-  [SENSOR_TYPES.Temperature]: {
+  [SensorTypes.TEMPERATURE]: {
     min: 0,
     max: 50,
     icon: 'mdi:thermometer',
     name: 'Ambient Temperature',
   },
-  [SENSOR_TYPES.Salinity]: {
+  [SensorTypes.SALINITY]: {
     icon: 'mdi:water-percent',
     name: 'Salinity',
   },
 };
 
 const SUPPORTED_SENSORS = [
-  SENSOR_TYPES.Light,
-  SENSOR_TYPES.Moisture,
-  SENSOR_TYPES.Temperature,
-  SENSOR_TYPES.Salinity,
+  SensorTypes.LIGHT,
+  SensorTypes.MOISTURE,
+  SensorTypes.TEMPERATURE,
+  SensorTypes.SALINITY,
+  SensorTypes.NUTRIENTS,
 ];
 
 const parseConfig = (config) => {
@@ -351,7 +250,9 @@ const parseConfig = (config) => {
         key !== 'show_ec' &&
         key !== 'sensor_order' &&
         !key.includes('_priority') &&
-        !key.includes('_position')
+        !key.includes('_position') &&
+        !key.includes('_order') &&
+        !['show_light', 'show_moisture', 'show_temperature', 'show_nutrition', 'show_salinity'].includes(key)
       ) {
         newConfig[key] = config[key];
       }
@@ -360,38 +261,41 @@ const parseConfig = (config) => {
 
   // Handle legacy config with priority or position values
   const sensorTypes = [
-    SENSOR_TYPES.Light,
-    SENSOR_TYPES.Moisture,
-    SENSOR_TYPES.Temperature,
-    SENSOR_TYPES.Salinity,
-    SENSOR_TYPES.Nutrients,
+    SensorTypes.LIGHT,
+    SensorTypes.MOISTURE,
+    SensorTypes.TEMPERATURE,
+    SensorTypes.SALINITY,
+    SensorTypes.NUTRIENTS,
   ];
-  sensorTypes.forEach((type) => {
-    const priorityKey = `${type}_priority`;
-    const positionKey = `${type}_position`;
-    const orderKey = `${type}_order`;
-    if (config[priorityKey] !== undefined) {
-      newConfig[orderKey] = String(config[priorityKey]);
-    } else if (config[positionKey] !== undefined) {
-      newConfig[orderKey] = String(config[positionKey]);
-    }
-  });
 
-  // Ensure at least one option is selected
-  const hasSelection =
-    newConfig.show_light ||
-    newConfig.show_moisture ||
-    newConfig.show_temperature ||
-    newConfig.show_salinity ||
-    newConfig.show_nutrition;
+  newConfig.enabled_sensors = sensorTypes
+    .map((type) => {
+      const priorityKey = `${type}_priority`;
+      const positionKey = `${type}_position`;
+      const orderKey = `${type}_order`;
 
-  // Default to showing all but salinity if nothing selected
-  if (!hasSelection) {
-    newConfig.show_light = true;
-    newConfig.show_moisture = true;
-    newConfig.show_temperature = true;
-    newConfig.show_salinity = false;
-    newConfig.show_nutrition = true;
+      let orderValue = 5;
+      if (config[priorityKey] !== undefined) {
+        orderValue = String(config[priorityKey]);
+      }
+      if (config[positionKey] !== undefined) {
+        orderValue = String(config[positionKey]);
+      }
+      if (config[orderKey] !== undefined) {
+        orderValue = String(config[orderKey]);
+      }
+      return { type, order: orderValue, enabled: config[`show_${type}`] };
+    })
+    .sort((a, b) => a.order - b.order)
+    .map(({ type, enabled }) => enabled ? type : undefined)
+    .filter((sensorType) => sensorType !== undefined);
+
+  if (newConfig.enabled_sensors?.length === 0) {
+    newConfig.enabled_sensors = DEFAULT_CONFIG.sensor_order;
+  }
+
+  if (typeof newConfig.state_color_plant === 'boolean') {
+    newConfig.state_color_plant = newConfig.state_color_plant === true ? 'image' : 'name';
   }
 
   return newConfig;
@@ -413,26 +317,26 @@ class FytaPlantCard extends HTMLElement {
     this._initialized = false;
     this._plantImage = '';
     this._measurementEntityIds = {
-      [SENSOR_TYPES.Battery]: '',
-      [SENSOR_TYPES.Light]: '',
-      [SENSOR_TYPES.Moisture]: '',
-      [SENSOR_TYPES.Temperature]: '',
-      [SENSOR_TYPES.Salinity]: '',
+      [SensorTypes.BATTERY]: '',
+      [SensorTypes.LIGHT]: '',
+      [SensorTypes.MOISTURE]: '',
+      [SensorTypes.TEMPERATURE]: '',
+      [SensorTypes.SALINITY]: '',
     };
 
     this._stateEntityIds = {
-      [SENSOR_TYPES.LightState]: '',
-      [SENSOR_TYPES.MoistureState]: '',
-      [SENSOR_TYPES.NutrientsState]: '',
-      [SENSOR_TYPES.PlantState]: '',
-      [SENSOR_TYPES.SalinityState]: '',
-      [SENSOR_TYPES.TemperatureState]: '',
+      [SensorTypes.LIGHT_STATE]: '',
+      [SensorTypes.MOISTURE_STATE]: '',
+      [SensorTypes.NUTRIENT_STATE]: '',
+      [SensorTypes.PLANT_STATE]: '',
+      [SensorTypes.SALINITY_STATE]: '',
+      [SensorTypes.TEMPERATURE_STATE]: '',
     };
 
     this._otherEntityIds = {
-      [SENSOR_TYPES.FertilizedLast]: '',
-      [SENSOR_TYPES.FertilizedNext]: '',
-      [SENSOR_TYPES.ScientificName]: '',
+      [SensorTypes.FERTILIZED_LAST]: '',
+      [SensorTypes.FERTILIZED_NEXT]: '',
+      [SensorTypes.SCIENTIFIC_NAME]: '',
     };
   }
 
@@ -450,19 +354,19 @@ class FytaPlantCard extends HTMLElement {
 
   _getStateColor(stateType, hass) {
     switch (stateType) {
-      case SENSOR_TYPES.LightState:
-      case SENSOR_TYPES.MoistureState:
-      case SENSOR_TYPES.NutrientsState:
-      case SENSOR_TYPES.SalinityState:
-      case SENSOR_TYPES.TemperatureState: {
+      case SensorTypes.LIGHT_STATE:
+      case SensorTypes.MOISTURE_STATE:
+      case SensorTypes.NUTRIENT_STATE:
+      case SensorTypes.SALINITY_STATE:
+      case SensorTypes.TEMPERATURE_STATE: {
         const entityId = this._stateEntityIds[stateType];
-        const state = hass.states[entityId]?.state || MEASUREMENT_STATUS_COLORS.NoData;
-        return MEASUREMENT_STATUS_COLORS[state];
+        const state = hass.states[entityId]?.state || MeasureMentStatusColors.NoData;
+        return MeasureMentStatusColors[state];
       }
-      case SENSOR_TYPES.PlantState: {
+      case SensorTypes.PLANT_STATE: {
         const entityId = this._stateEntityIds[stateType];
-        const state = hass.states[entityId]?.state || PLANT_STATUS_STATES.NoSensor;
-        return PLANT_STATUS_COLORS[state];
+        const state = hass.states[entityId]?.state || PlantStatusStates.NO_SENSOR;
+        return PlantStautsColors[state];
       }
       default: {
         return 'var(--primary-text-color, #ffffff)';
@@ -511,12 +415,7 @@ class FytaPlantCard extends HTMLElement {
     const baseSize = 4; // Base size
 
     // Count enabled sensors
-    let sensorCount = 0;
-    if (this.config?.show_light) sensorCount++;
-    if (this.config?.show_moisture) sensorCount++;
-    if (this.config?.show_temperature) sensorCount++;
-    if (this.config?.show_salinity) sensorCount++;
-    if (this.config?.show_nutrition) sensorCount++;
+    const sensorCount = this.config.enabled_sensors?.length;
 
     // Add 0.5 for each sensor beyond the first 2
     if (sensorCount > 2) {
@@ -594,41 +493,41 @@ class FytaPlantCard extends HTMLElement {
     }
 
     if (id.endsWith('_scientific_name')) {
-      this._otherEntityIds[SENSOR_TYPES.ScientificName] = stateEntity.entity_id;
+      this._otherEntityIds[SensorTypes.SCIENTIFIC_NAME] = stateEntity.entity_id;
       return;
     }
 
     if (id.startsWith('sensor.')) {
       if (!stateEntity.attributes.device_class && stateEntity.attributes.unit_of_measurement == 'μmol/s⋅m²') {
-        this._measurementEntityIds[SENSOR_TYPES.Light] = stateEntity.entity_id;
+        this._measurementEntityIds[SensorTypes.LIGHT] = stateEntity.entity_id;
         return;
       }
 
       switch (stateEntity.attributes.device_class) {
-        case DEVICE_CLASS.Battery:
-        case DEVICE_CLASS.Moisture:
-        case DEVICE_CLASS.Temperature: {
+        case DeviceClass.BATTERY:
+        case DeviceClass.MOISTURE:
+        case DeviceClass.TEMPERATURE: {
           this._measurementEntityIds[stateEntity.attributes.device_class] = stateEntity.entity_id;
           return;
         }
-        case DEVICE_CLASS.Conductivity: {
-          this._measurementEntityIds[SENSOR_TYPES.Salinity] = stateEntity.entity_id;
+        case DeviceClass.CONDUCTIVITY: {
+          this._measurementEntityIds[SensorTypes.SALINITY] = stateEntity.entity_id;
           return;
         }
-        case DEVICE_CLASS.Date: {
+        case DeviceClass.DATE: {
           // Capture the last fertilization date entity - support both naming patterns
           if (id.includes('fertilize_last') || id.includes('last_fertilized')) {
-            this._otherEntityIds[SENSOR_TYPES.FertilizedLast] = stateEntity.entity_id;
+            this._otherEntityIds[SensorTypes.FERTILIZED_LAST] = stateEntity.entity_id;
             return;
           }
           // Capture the next fertilization date entity - support both naming patterns
           if (id.includes('fertilize_next') || id.includes('next_fertilization')) {
-            this._otherEntityIds[SENSOR_TYPES.FertilizedNext] = stateEntity.entity_id;
+            this._otherEntityIds[SensorTypes.FERTILIZED_NEXT] = stateEntity.entity_id;
             return;
           }
           break;
         }
-        case DEVICE_CLASS.Enum: {
+        case DeviceClass.ENUM: {
           const entity = hass.entities[id];
           if (!entity) return;
 
@@ -708,43 +607,59 @@ class FytaPlantCard extends HTMLElement {
         padding-top: 8px;
         height: 72px;
         position: relative;
+        display: flex;
       }
 
-      .header > img {
+      .header #plant-image {
+        width: 90px;
+        margin: -28px 16px 0px;
+      }
+
+      .header #plant-image > img {
         border-radius: 50%;
-        width: 88px;
-        height: 88px;
+        width: 90px;
+        height: 90px;
         object-fit: cover;
-        margin-left: 16px;
-        margin-right: 16px;
-        margin-top: -28px;
-        float: left;
         box-shadow: var( --ha-card-box-shadow, 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2) );
         cursor: pointer;
       }
 
-      .header > #name {
+      .header #plant-image > img.state {
+        width: 86px;
+        height: 86px;
+        border-color: var(--disabled-text-color, #bdbdbd);
+        border-width: 2px;
+        border-style: solid;
+      }
+
+      .header #plant-text {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        margin-top: 10px;
+      }
+
+      .header #plant-text > #name {
         font-weight: bold;
-        width: calc(100% - 120px);
-        margin-top: 8px;
         text-wrap: nowrap;
         text-overflow: ellipsis;
-        display: inline-block;
+        overflow: hidden;
         cursor: pointer;
       }
 
-      .header > #scientific-name {
+      .header #plant-text > #scientific-name {
         color: var(--secondary-text-color, #727272);
         text-wrap: nowrap;
         text-overflow: ellipsis;
-        display: inline-block;
+        overflow: hidden;
         cursor: pointer;
       }
 
-      #battery {
-        position: absolute;
-        right: 16px;
-        top: 24px;
+      .header #plant-battery {
+        margin-left: 8px;
+        margin-top: 18px;
+        margin-right: 16px;
+        cursor: pointer;
       }
 
       .attributes {
@@ -886,35 +801,36 @@ class FytaPlantCard extends HTMLElement {
         display: none;
       }
 
-      .compact-mode #battery {
-        top: 5px;
-      }
-
-      .compact-mode #name {
-        width: calc(100% - 120px);
-        max-width: 65%;
+      .compact-mode #plant-text {
         margin-top: 8px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .compact-mode #scientific-name {
-        display: none;
       }
 
       /* We'll use the same header style as normal mode, but with reduced padding */
       .compact-mode .header {
         padding-top: 6px;
-        height: 65px;
+        height: 64px;
       }
 
-      /* Keep the same image styling as normal mode for consistency */
-      .compact-mode .header > img {
+      .compact-mode .header #plant-image {
+        width: 78px;
+        margin: -24px 16px 0px;
+      }
+
+      .compact-mode .header #plant-image > img {
         width: 78px;
         height: 78px;
-        margin-top: -24px;
-        /* Other properties inherited from normal mode */
+      }
+
+      .compact-mode .header #plant-image > img.state {
+        width: 74px;
+        height: 74px;
+        border-color: var(--disabled-text-color, #bdbdbd);
+        border-width: 2px;
+        border-style: solid;
+      }
+
+      .compact-mode #plant-battery {
+        margin-top: 16px;
       }
 
       /* Reduce padding in the attributes section for compact mode */
@@ -928,10 +844,14 @@ class FytaPlantCard extends HTMLElement {
 
     content.innerHTML = `
       <div class="header">
-        <img src="${this._plantImage}" @click="${this._click.bind(this, this._stateEntityIds.plant)}">
-        <span id="name" ${ this.config.state_color_plant ? `style="color:${this._getStateColor(SENSOR_TYPES.PlantState, hass)};"` : ''} @click="${this._click.bind(this, this._stateEntityIds.plant)}">${this.config.title}</span>
-        <span id="battery">${this._renderBattery(hass)}</span>
-        ${ this.config.show_scientific_name ? `<span id="scientific-name" @click="${this._click.bind(this, this._stateEntityIds.plant)}">${hass.states[this._otherEntityIds.scientificName]?.state || ''}</span>`: ''}
+        <div id="plant-image">
+          <img src="${this._plantImage}"${this.config.state_color_plant === 'image' ? ` class="state" style="border-color:${this._getStateColor(SensorTypes.PLANT_STATE, hass)};"` : ''} @click="${this._click.bind(this, this._stateEntityIds.plant)}">
+        </div>
+        <div id="plant-text">
+          <span id="name"${this.config.state_color_plant === 'name' ? ` style="color:${this._getStateColor(SensorTypes.PLANT_STATE, hass)};"` : ''} @click="${this._click.bind(this, this._stateEntityIds.plant)}">${this.config.title}</span>
+          ${this.config.show_scientific_name ? `<span id="scientific-name" @click="${this._click.bind(this, this._stateEntityIds.plant)}">${hass.states[this._otherEntityIds.scientificName]?.state || ''}</span>`: ''}
+        </div>
+        <div id="plant-battery">${this._renderBattery(hass)}</div>
       </div>
       <div class="divider"></div>
       <div class="attributes">
@@ -1005,7 +925,7 @@ class FytaPlantCard extends HTMLElement {
     return `
       <div class="battery tooltip" @click="${this._click.bind(this, entityId)}">
         <div class="tip" style="text-align:center;">Battery: ${state}%<br>Status: ${statusText}</div>
-        <ha-icon icon="${icon}" style="color: ${color};"></ha-icon>
+        <ha-icon icon="${icon}"${this.config.state_color_battery ? ` style="color: ${color};"` : ''}></ha-icon>
       </div>
     `;
   }
@@ -1018,31 +938,31 @@ class FytaPlantCard extends HTMLElement {
     }
 
     switch (statusState) {
-      case MEASUREMENT_STATUS_STATES.TooLow: {
+      case MeasurementStatusStates.TOO_LOW: {
         return {
           percentage: percentage !== null ? percentage : 10,
           class: 'bad',
         };
       }
-      case MEASUREMENT_STATUS_STATES.Low: {
+      case MeasurementStatusStates.LOW: {
         return {
           percentage: percentage !== null ? percentage : 30,
           class: 'warning',
         };
       }
-      case MEASUREMENT_STATUS_STATES.Perfect: {
+      case MeasurementStatusStates.PERFECT: {
         return {
           percentage: percentage !== null ? percentage : 50,
           class: 'good',
         };
       }
-      case MEASUREMENT_STATUS_STATES.High: {
+      case MeasurementStatusStates.HIGH: {
         return {
           percentage: percentage !== null ? percentage : 70,
           class: 'warning',
         };
       }
-      case MEASUREMENT_STATUS_STATES.TooHigh: {
+      case MeasurementStatusStates.TOO_HIGH: {
         return {
           percentage: percentage !== null ? percentage : 90,
           class: 'bad',
@@ -1076,47 +996,14 @@ class FytaPlantCard extends HTMLElement {
   }
 
   _renderSensors(hass) {
-    // Main sensor parameters
-    const visibleSensors = [];
-
-    // Filter sensors based on configuration
-    const enabledSensors = SUPPORTED_SENSORS.filter((sensorType) => {
-      // Translate from entity key to config key
-      const configKey = `show_${sensorType}`;
-      return configKey && this.config[configKey] === true;
+    // Filter enabled sensors based on entity ID availability
+    const visibleSensors = this.config.enabled_sensors?.filter((sensorType) => {
+      return this._measurementEntityIds[sensorType] !== '';
     });
 
-    // Add visible sensors to our collection
-    enabledSensors.forEach((sensorType) => {
-      if (this._measurementEntityIds[sensorType] !== '') {
-        visibleSensors.push({
-          type: 'sensor',
-          key: sensorType,
-          sensorType,
-          order: parseInt(this.config[`${sensorType}_order`] || '5'),
-        });
-      }
-    });
-
-    // Add nutrition if enabled
-    if (this.config.show_nutrition && this._stateEntityIds.nutrients) {
-      visibleSensors.push({
-        type: 'sensor',
-        key: 'nutrition',
-        sensorType: 'nutrition',
-        order: parseInt(this.config.nutrition_order || '5'),
-      });
+    if (!visibleSensors || visibleSensors.length === 0) {
+      return '';
     }
-
-    // Sort sensors based on order
-    visibleSensors.sort((a, b) => {
-      // Primary sort by order
-      if (a.order !== b.order) {
-        return a.order - b.order;
-      }
-      // Secondary sort by type name (for stable sorting when orders are equal)
-      return a.sensorType.localeCompare(b.sensorType);
-    });
 
     // Distribute items into columns considering their total number
     const leftColumnItems = [];
@@ -1138,12 +1025,11 @@ class FytaPlantCard extends HTMLElement {
     });
 
     // Render a single sensor
-    const renderSensor = (item) => {
-      if (item.key === 'nutrition') {
+    const renderSensor = (sensorType) => {
+      if (sensorType === SensorTypes.NUTRIENTS) {
         return renderNutrition();
       }
 
-      const sensorType = item.key;
       const sensorEntityId = this._measurementEntityIds[sensorType];
       const sensorState = hass.states[sensorEntityId].state;
 
@@ -1170,9 +1056,9 @@ class FytaPlantCard extends HTMLElement {
       return `
         <div class="attribute tooltip" @click="${this._click.bind(this, sensorEntityId)}" data-entity="${sensorEntityId}">
           <div class="tip" style="text-align:center;">${tooltipContent}</div>
-          <ha-icon icon="${sensorSettings.icon}" ${this.config.state_color_icon ? `style="color:${color};"`: ''}></ha-icon>
+          <ha-icon icon="${sensorSettings.icon}"${this.config.state_color_icon ? ` style="color:${color};"`: ''}></ha-icon>
           <div class="meter">
-            <span ${this.config.state_color_sensor ? `class="${meterState.class}"` : ''} style="width: ${meterState.percentage}%;"></span>
+            <span${this.config.state_color_sensor ? ` class="${meterState.class}"` : ''} style="width: ${meterState.percentage}%;"></span>
           </div>
           <div class="sensor-value">${sensorState}</div>
           <div class="uom">${this._formatDisplayUnit(unitOfMeasurement)}</div>
@@ -1184,7 +1070,7 @@ class FytaPlantCard extends HTMLElement {
     const renderNutrition = () => {
       const statusEntityId = this._stateEntityIds.nutrients;
       const statusState = hass.states[statusEntityId]?.state;
-      const color = this._getStateColor(SENSOR_TYPES.NutrientsState, hass);
+      const color = this._getStateColor(SensorTypes.NUTRIENT_STATE, hass);
 
       // Get fertilizations date if available
       const fertiliseLastEntityId = this._otherEntityIds.fertiliseLast;
@@ -1203,7 +1089,7 @@ class FytaPlantCard extends HTMLElement {
       }
 
       // Format the next fertilization date for display
-      const meterState = this._calculateMeterState(SENSOR_SETTINGS[SENSOR_TYPES.Nutrients], null, statusState);
+      const meterState = this._calculateMeterState(SENSOR_SETTINGS[SensorTypes.NUTRIENTS], null, statusState);
 
       // Build tooltip content
       const tooltipContent = this._buildNutritionTooltipContent(statusState, daysUntilFertilization, lastFertilizationDateString, nextFertilizationDateString);
@@ -1212,9 +1098,9 @@ class FytaPlantCard extends HTMLElement {
       return `
         <div class="attribute tooltip" @click="${this._click.bind(this, statusEntityId)}" data-entity="${statusEntityId}">
           <div class="tip" style="text-align:center;">${tooltipContent}</div>
-          <ha-icon icon="${SENSOR_SETTINGS[SENSOR_TYPES.Nutrients].icon}" ${this.config.state_color_icon ? `style="color:${color};"` : ''}></ha-icon>
+          <ha-icon icon="${SENSOR_SETTINGS[SensorTypes.NUTRIENTS].icon}"${this.config.state_color_icon ? ` style="color:${color};"` : ''}></ha-icon>
           <div class="meter">
-            <span ${this.config.state_color_sensor ? `class="${meterState.class}"` : ''} style="width: ${meterState.percentage}%;"></span>
+            <span${this.config.state_color_sensor ? ` class="${meterState.class}"` : ''} style="width: ${meterState.percentage}%;"></span>
           </div>
           <div class="sensor-value">${sensorValue}</div>
           <div class="uom">${Math.abs(daysUntilFertilization) === 1 ? 'day' : 'days'}</div>
@@ -1225,18 +1111,6 @@ class FytaPlantCard extends HTMLElement {
     // Create HTML for both columns
     let leftColumnHtml = leftColumnItems.map(renderSensor).join('');
     let rightColumnHtml = rightColumnItems.map(renderSensor).join('');
-
-    // Check if we need a full-width row
-    const needsFullWidthItem = leftColumnItems.some((item) => item.type === 'full-width-placeholder');
-
-    let fullWidthItemHtml = '';
-    if (needsFullWidthItem && this._fullWidthSensor) {
-      if (this._fullWidthSensor.key === 'nutrition') {
-        fullWidthItemHtml = renderNutrition();
-      } else {
-        fullWidthItemHtml = renderSensor(this._fullWidthSensor);
-      }
-    }
 
     // Construct final HTML
     let sensorHtml = `
@@ -1251,20 +1125,30 @@ class FytaPlantCard extends HTMLElement {
     `;
 
     // Add full-width item if needed
-    if (fullWidthItemHtml) {
-      sensorHtml += fullWidthItemHtml;
+    if (this._fullWidthSensor) {
+      const isNutritionSensor = this._fullWidthSensor.key === SensorTypes.NUTRIENTS;
+      sensorHtml += isNutritionSensor ? renderNutrition() : renderSensor(this._fullWidthSensor);
+      this._fullWidthSensor = null; // Reset after use
     }
 
     return sensorHtml;
   }
 
   _updateDisplayValues(hass) {
+    // Update image element
+    const imageElement = this.shadowRoot.querySelector('img');
+    if (imageElement) {
+      if (this.config.state_color_plant === 'image') {
+        imageElement.style.borderColor = this._getStateColor(SensorTypes.PLANT_STATE, hass);
+      }
+    }
+
     // Update plant status and title
     const nameElement = this.shadowRoot.querySelector('#name');
     if (nameElement) {
       nameElement.textContent = this.config.title;
-      if (this.config.state_color_plant) {
-        nameElement.style.color = this._getStateColor(SENSOR_TYPES.PlantState, hass);
+      if (this.config.state_color_plant === 'name') {
+        nameElement.style.color = this._getStateColor(SensorTypes.PLANT_STATE, hass);
       }
     }
 
@@ -1347,9 +1231,6 @@ class FytaPlantCard extends HTMLElement {
       if (nutritionElement) {
         const statusEntity = this._stateEntityIds.nutrients;
         const statusState = hass.states[statusEntity].state;
-        const iconElement = nutritionElement.querySelector('ha-icon');
-        const meterElement = nutritionElement.querySelector('.meter span');
-        const valueElement = nutritionElement.querySelector('.sensor-value');
 
         // Get next fertilization date if available
         const { fertiliseLast: fertiliseLastEntityId, fertiliseNext: fertiliseNextEntityId } = this._otherEntityIds;
@@ -1366,19 +1247,22 @@ class FytaPlantCard extends HTMLElement {
           lastFertilizationDateString = hass.states[fertiliseLastEntityId].state;
         }
 
+        const iconElement = nutritionElement.querySelector('ha-icon');
         if (iconElement) {
           if (this.config.state_color_icon) {
-            iconElement.style.color = this._getStateColor(SENSOR_TYPES.NutrientsState, hass);
+            iconElement.style.color = this._getStateColor(SensorTypes.NUTRIENT_STATE, hass);
           }
         }
 
+        const valueElement = nutritionElement.querySelector('.sensor-value');
         if (valueElement) {
           valueElement.textContent = daysUntilFertilization !== null && !isNaN(daysUntilFertilization) ? daysUntilFertilization : '-';
         }
 
+        const meterElement = nutritionElement.querySelector('.meter span');
         if (meterElement) {
           // Calculate meter width and class based on status
-          const meterState = this._calculateMeterState(SENSOR_SETTINGS[SENSOR_TYPES.Nutrients], null, statusState);
+          const meterState = this._calculateMeterState(SENSOR_SETTINGS[SensorTypes.NUTRIENTS], null, statusState);
           meterElement.style.width = `${meterState.percentage}%`;
           if (this.config.state_color_sensor) {
             meterElement.className = meterState.class;
@@ -1422,12 +1306,25 @@ export class FytaPlantCardEditor extends LitElement {
   }
 
   _itemMoved(ev) {
+    console.log('Item moved:', JSON.stringify(ev), ev);
     ev.stopPropagation();
 
-    // TODO: Implement
+    const { oldIndex, newIndex } = ev.detail;
+    const newItems = this.items.concat();
+
+    newItems.splice(newIndex, 0, newItems.splice(oldIndex, 1)[0]);
+
+    const event = new Event('orders-changed', {
+      bubbles: true,
+      composed: true,
+    });
+    event.detail = { items: newItems };
+    this.items = newItems;
+    this.dispatchEvent(event);
   }
 
   _valueChanged(ev) {
+    console.log('Value changed:', JSON.stringify(ev), ev);
     if (!this.config || !this.hass) {
       return;
     }
@@ -1457,7 +1354,7 @@ export class FytaPlantCardEditor extends LitElement {
     let oldValue = '';
     let newValue = '';
 
-    if (ev.detail.value) {
+    if (ev.detail?.value) {
       Object.keys(ev.detail.value).forEach((key) => {
         // Special handling for order changes
         if (key.includes('_order')) {
@@ -1475,7 +1372,7 @@ export class FytaPlantCardEditor extends LitElement {
     // If an order value was changed, find if any other sensor has the same new value
     // and swap them to maintain uniqueness
     if (orderChanged) {
-      const sensorTypes = [SENSOR_TYPES.Light, SENSOR_TYPES.Moisture, SENSOR_TYPES.Temperature, SENSOR_TYPES.Salinity, SENSOR_TYPES.Nutrients];
+      const sensorTypes = [SensorTypes.LIGHT, SensorTypes.MOISTURE, SensorTypes.TEMPERATURE, SensorTypes.SALINITY, SensorTypes.NUTRIENTS];
 
       sensorTypes.forEach((type) => {
         if (type !== changedType) {
@@ -1490,7 +1387,7 @@ export class FytaPlantCardEditor extends LitElement {
     }
 
     // Special handling for device_id
-    if (ev.detail.value.device_id !== undefined && ev.detail.value.device_id !== this._device_id) {
+    if (ev.detail?.value.device_id !== undefined && ev.detail.value.device_id !== this._device_id) {
       if (ev.detail.value.device_id === '') {
         newConfig.title = '';
       } else if (newConfig.title === '') {
@@ -1505,10 +1402,11 @@ export class FytaPlantCardEditor extends LitElement {
       }
     }
 
-    this.configChanged(newConfig);
+    this._configChanged(newConfig);
   }
 
-  configChanged(newConfig) {
+  _configChanged(newConfig) {
+    console.log('Config changed:', newConfig);
     const event = new Event('config-changed', {
       bubbles: true,
       composed: true,
@@ -1517,49 +1415,88 @@ export class FytaPlantCardEditor extends LitElement {
     this.dispatchEvent(event);
   }
 
+  _handleChange(ev) {
+    console.log('Handle change:', JSON.stringify(ev), ev);
+    const item = ev.currentTarget.closest('.item');
+    const sensorType = item.getAttribute('data-sensor-type');
+    console.log('Sensor type:', sensorType);
+
+    const updatedConfig = { ...this.config };
+
+    // Update the config with the new value
+    if (ev.target.checked) {
+      if (!updatedConfig.enabled_sensors) {
+        updatedConfig.enabled_sensors = [];
+      }
+      updatedConfig.enabled_sensors.push(sensorType);
+    } else {
+      const index = updatedConfig.enabled_sensors?.indexOf(sensorType);
+      if (index > -1) {
+        updatedConfig.enabled_sensors.splice(index, 1);
+      }
+    }
+
+    this._configChanged(this.config);
+  } 
+
+  _getSensorColor(sensorType) {
+    if (!this.config.enabled_sensors?.includes(sensorType)) {
+      return 'var(--disabled-color, #bdbdbd)';
+    }
+
+    switch (sensorType) {
+      case SensorTypes.LIGHT:
+        return 'var(--yellow-color, #ffeb3b)';
+      case SensorTypes.MOISTURE:
+        return 'var(--blue-color, #2196f3)';
+      case SensorTypes.TEMPERATURE:
+        return 'var(--green-color, #4caf50)';
+      case SensorTypes.NUTRIENTS:
+        return 'var(--brown-color, #795548)';
+      case SensorTypes.SALINITY:
+        return 'var(--purple-color, #9c27b0)';
+      default:
+        return 'var(--disabled-color: #bdbdbd;)';
+    }
+  }
+
   render() {
     if (!this.hass || !this.config) {
       return html``;
     }
 
-    // Create a safe copy for the form to use - ensure all properties exist
-    const formData = {
-      ...DEFAULT_CONFIG,
-      ...this.config,
-    };
+    let items = [SensorTypes.LIGHT, SensorTypes.MOISTURE, SensorTypes.TEMPERATURE, SensorTypes.NUTRIENTS, SensorTypes.SALINITY];
 
     return html`
       <div class="card-config">
         <div class="side-by-side">
           <ha-form
             .hass=${this.hass}
-            .data=${formData}
-            .schema=${SCHEMA}
+            .data=${this.config}
+            .schema=${SCHEMA_EDITOR}
             .computeLabel=${this._computeLabel}
             @value-changed=${this._valueChanged}
           ></ha-form>
           <ha-sortable
             handle-selector=".handle"
-            @item-moved=${this._entityMoved}
+            @item-moved=${this._itemMoved}
           >
             <div class="sensors">
-              ${Object.keys(SUPPORTED_SENSORS).map(
-                (sensorType) => html`
-                <div class="item">
+              ${items.map((sensorType) => html`
+                <div class="item"  data-sensor-type="${sensorType}">
                   <div class="handle">
                     <ha-icon icon="mdi:drag"></ha-svg-icon>
                   </div>
-                  <div class="icon">
-                    <ha-icon icon="${
-                      SENSOR_SETTINGS[sensorType].icon
-                    }"></ha-svg-icon>
-                  </div>
                   <div class="item-switch">
                     <ha-switch
-                      .checked=${this.value ?? this.placeholder === true}
+                      .checked=${ this.config.enabled_sensors?.includes(sensorType)}
                       @change=${this._handleChange}
-                      .disabled=${this.disabled}
                     ></ha-switch>
+                  </div>
+                  <div class="item-icon">
+                    <ha-icon
+                      icon="${SENSOR_SETTINGS[sensorType].icon}"
+                      style="color:${this._getSensorColor(sensorType)}"></ha-svg-icon>
                   </div>
                   <div class="item-label">${
                     SENSOR_SETTINGS[sensorType].name
@@ -1569,6 +1506,7 @@ export class FytaPlantCardEditor extends LitElement {
               )}
             </div>
           </ha-sortable>
+          <ha-form-constant .schema="${SCHEMA_CONSTANT}" .computeLabel=${this._computeLabel}></ha-form-constant>
         </div>
       </div>
     `;
@@ -1592,8 +1530,8 @@ export class FytaPlantCardEditor extends LitElement {
     .item .handle > * {
       pointer-events: none;
     }
-    .item .item-switch {
-      pading-right: 16px;
+    .item .item-switch, .item .item-icon {
+      padding-right: 16px;
     }
     .item .item-label {
       flex-grow: 1;
@@ -1615,21 +1553,8 @@ export class FytaPlantCardEditor extends LitElement {
       }
     }
 
-    // Ensure at least one option is selected
-    const hasSelection =
-      newConfig.show_light ||
-      newConfig.show_moisture ||
-      newConfig.show_temperature ||
-      newConfig.show_salinity ||
-      newConfig.show_nutrition;
-
-    if (!hasSelection) {
-      // Default to showing all if nothing selected
-      newConfig.show_light = true;
-      newConfig.show_moisture = true;
-      newConfig.show_temperature = true;
-      newConfig.show_salinity = false;
-      newConfig.show_nutrition = true;
+    if  (newConfig.enabled_sensors?.length === 0) {
+      newConfig.enabled_sensors = DEFAULT_CONFIG.enabled_sensors;
     }
 
     this.config = newConfig;
