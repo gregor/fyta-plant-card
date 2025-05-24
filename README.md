@@ -25,7 +25,7 @@ A custom card for displaying [FYTA plant](https://fyta.de/) information on your 
    - Go to HACS → Frontend
    - Click the three dots in the top right corner
    - Select "Custom repositories"
-   - Add `FYTA-GmbH/fyta-plant-card` with category "Lovelace"
+   - Add `https://github.com/dontinelli/fyta-plant-card` with category "Lovelace"
 2. Install "FYTA Plant Card" from HACS
 3. Refresh your browser
 
