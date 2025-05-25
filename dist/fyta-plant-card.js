@@ -1077,6 +1077,7 @@ class FytaPlantCard extends LitElement {
         return renderNutrition();
       }
 
+      const sensorSettings = SENSOR_SETTINGS[sensorType];
       const sensorEntityId = this._measurementEntityIds[sensorType];
       const sensorValue = hass.states[sensorEntityId].state;
       const formattedSensorValue = this._formatNumberToString(sensorValue, sensorSettings.decimals || 0);
@@ -1093,7 +1094,6 @@ class FytaPlantCard extends LitElement {
       }
 
       const color = this._getStateColor(sensorType, hass);
-      const sensorSettings = SENSOR_SETTINGS[sensorType];
 
       // Calculate meter width and class based on status
       const meterState = this._calculateMeterState(sensorSettings, sensorValue, sensorStatus);
