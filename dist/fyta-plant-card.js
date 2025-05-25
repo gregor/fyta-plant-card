@@ -219,16 +219,19 @@ const SCHEMA_PART_TWO = [
 
 const SENSOR_SETTINGS = {
   [SensorTypes.BATTERY]: {
+    decimals: 0,
     min: 0,
     max: 100,
     icon: 'mdi:battery',
     name: 'Battery',
   },
   [SensorTypes.LIGHT]: {
+    decimals: 0,
     icon: 'mdi:white-balance-sunny',
     name: 'Light',
   },
   [SensorTypes.MOISTURE]: {
+    decimals: 0,
     min: 0,
     max: 100,
     icon: 'mdi:water',
@@ -239,12 +242,14 @@ const SENSOR_SETTINGS = {
     name: 'Nutrition',
   },
   [SensorTypes.TEMPERATURE]: {
+    decimals: 0,
     min: 0,
     max: 50,
     icon: 'mdi:thermometer',
     name: 'Ambient Temperature',
   },
   [SensorTypes.SALINITY]: {
+    decimals: 0,
     icon: 'mdi:water-percent',
     name: 'Salinity',
   },
@@ -503,6 +508,12 @@ class FytaPlantCard extends LitElement {
     if (!unit) return '';
     const parts = unit.split('/');
     return parts[0];
+  }
+
+  _formatNumberToString(value, decimals = 0) {
+    const numberValue = Number(value);
+
+    return isNaN(numberValue) ? '' : numberValue.toFixed(decimals);
   }
 
   _handleEntity(id, hass) {
@@ -1068,6 +1079,7 @@ class FytaPlantCard extends LitElement {
 
       const sensorEntityId = this._measurementEntityIds[sensorType];
       const sensorState = hass.states[sensorEntityId].state;
+      const sensorValue = this._formatNumberToString(sensorState, sensorSettings.decimals || 0);
 
       // Get proper units for display and tooltip
       const unitOfMeasurement = hass.states[sensorEntityId].attributes.unit_of_measurement || '';
@@ -1087,7 +1099,7 @@ class FytaPlantCard extends LitElement {
       const meterState = this._calculateMeterState(sensorSettings, sensorState, statusState);
 
       // Generate tooltip content with current value and status - use full unit
-      const tooltipContent = `${sensorSettings.name}: ${sensorState} ${unitOfMeasurement}${statusState ? `<br>Status: ${statusState.replace(/_/g, ' ')}` : ''}`;
+      const tooltipContent = `${sensorSettings.name}: ${sensorValue} ${unitOfMeasurement}${statusState ? `<br>Status: ${statusState.replace(/_/g, ' ')}` : ''}`;
 
       return `
         <div class="attribute tooltip" @click="${this._click.bind(this, sensorEntityId)}" data-entity="${sensorEntityId}">
@@ -1096,7 +1108,7 @@ class FytaPlantCard extends LitElement {
           <div class="meter">
             <span${this.config.state_color_sensor ? ` class="${meterState.class}"` : ''} style="width: ${meterState.percentage}%;"></span>
           </div>
-          <div class="sensor-value">${sensorState}</div>
+          <div class="sensor-value">${sensorValue}</div>
           <div class="uom">${this._formatDisplayUnit(unitOfMeasurement)}</div>
         </div>
       `;
