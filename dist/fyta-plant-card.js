@@ -921,14 +921,14 @@ class FytaPlantCard extends LitElement {
     }
 
     const entityId = this._measurementEntityIds[SensorTypes.BATTERY];
-    const state = parseInt(hass.states[entityId].state);
+    const batteryLevel = parseInt(hass.states[entityId].state);
 
     // Check against the user-configured threshold
     const threshold = this.config?.battery_threshold ?? DEFAULT_CONFIG.battery_threshold;
 
     // Only show battery if level is at or below the threshold
     // Skip showing if threshold is 0 (never show)
-    if (threshold === 0 || state > threshold) {
+    if (threshold === 0 || batteryLevel > threshold) {
       return '';
     }
 
@@ -957,12 +957,12 @@ class FytaPlantCard extends LitElement {
       { threshold: -Infinity, icon: 'mdi:battery-alert-variant-outline', color: 'var(--state-sensor-battery-low-color, #f44336)', statusText: BatteryStatusText.UNKNOWN },
     ];
 
-    const { icon, color, statusText } = thresholdLevels.find(({ threshold }) => state >= threshold) || { icon: 'mdi:battery-alert-variant-outline', color: 'var(--red-color, #f44336)', statusText: BatteryStatusText.UNKNOWN };
+    const { icon, color, statusText } = thresholdLevels.find(({ threshold }) => batteryLevel >= threshold) || { icon: 'mdi:battery-alert-variant-outline', color: 'var(--red-color, #f44336)', statusText: BatteryStatusText.UNKNOWN };
 
     return `
       <div id="plant-battery">
         <div class="battery tooltip" @click="${this._click.bind(this, entityId)}">
-          <div class="tip" style="text-align:center;">Battery: ${state}%<br>Status: ${statusText}</div>
+          <div class="tip" style="text-align:center;">Battery: ${batteryLevel}%<br>Status: ${statusText}</div>
           <ha-icon icon="${icon}"${this.config.state_color_battery ? ` style="color: ${color};"` : ''}></ha-icon>
         </div>
       </div>
@@ -1078,28 +1078,28 @@ class FytaPlantCard extends LitElement {
       }
 
       const sensorEntityId = this._measurementEntityIds[sensorType];
-      const sensorState = hass.states[sensorEntityId].state;
-      const sensorValue = this._formatNumberToString(sensorState, sensorSettings.decimals || 0);
+      const sensorValue = hass.states[sensorEntityId].state;
+      const formattedSensorValue = this._formatNumberToString(sensorValue, sensorSettings.decimals || 0);
 
       // Get proper units for display and tooltip
       const unitOfMeasurement = hass.states[sensorEntityId].attributes.unit_of_measurement || '';
 
       // Get the proper status entity
-      let statusState = '';
+      let sensorStatus = '';
 
       const statusEntityId = this._stateEntityIds[sensorType];
       if (statusEntityId) {
-        statusState = hass.states[statusEntityId].state;
+        sensorStatus = hass.states[statusEntityId].state;
       }
 
       const color = this._getStateColor(sensorType, hass);
       const sensorSettings = SENSOR_SETTINGS[sensorType];
 
       // Calculate meter width and class based on status
-      const meterState = this._calculateMeterState(sensorSettings, sensorState, statusState);
+      const meterState = this._calculateMeterState(sensorSettings, sensorValue, sensorStatus);
 
       // Generate tooltip content with current value and status - use full unit
-      const tooltipContent = `${sensorSettings.name}: ${sensorValue} ${unitOfMeasurement}${statusState ? `<br>Status: ${statusState.replace(/_/g, ' ')}` : ''}`;
+      const tooltipContent = `${sensorSettings.name}: ${formattedSensorValue} ${unitOfMeasurement}${sensorStatus ? `<br>Status: ${sensorStatus.replace(/_/g, ' ')}` : ''}`;
 
       return `
         <div class="attribute tooltip" @click="${this._click.bind(this, sensorEntityId)}" data-entity="${sensorEntityId}">
@@ -1108,7 +1108,7 @@ class FytaPlantCard extends LitElement {
           <div class="meter">
             <span${this.config.state_color_sensor ? ` class="${meterState.class}"` : ''} style="width: ${meterState.percentage}%;"></span>
           </div>
-          <div class="sensor-value">${sensorValue}</div>
+          <div class="sensor-value">${formattedSensorValue}</div>
           <div class="uom">${this._formatDisplayUnit(unitOfMeasurement)}</div>
         </div>
       `;
@@ -1117,7 +1117,7 @@ class FytaPlantCard extends LitElement {
     // Render nutrition status
     const renderNutrition = () => {
       const statusEntityId = this._stateEntityIds[SensorTypes.NUTRIENTS_STATE];
-      const statusState = hass.states[statusEntityId]?.state;
+      const sensorState = hass.states[statusEntityId]?.state;
       const color = this._getStateColor(SensorTypes.NUTRIENTS_STATE, hass);
 
       // Get fertilizations date if available
@@ -1137,10 +1137,10 @@ class FytaPlantCard extends LitElement {
       }
 
       // Format the next fertilization date for display
-      const meterState = this._calculateMeterState(SENSOR_SETTINGS[SensorTypes.NUTRIENTS], null, statusState);
+      const meterState = this._calculateMeterState(SENSOR_SETTINGS[SensorTypes.NUTRIENTS], null, sensorState);
 
       // Build tooltip content
-      const tooltipContent = this._buildNutritionTooltipContent(statusState, daysUntilFertilization, lastFertilizationDateString, nextFertilizationDateString);
+      const tooltipContent = this._buildNutritionTooltipContent(sensorState, daysUntilFertilization, lastFertilizationDateString, nextFertilizationDateString);
       const sensorValue = daysUntilFertilization !== null && !isNaN(daysUntilFertilization) ? daysUntilFertilization : '-';
 
       return `
