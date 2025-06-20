@@ -111,7 +111,7 @@ const TranslationKeys = {
 
 const DEFAULT_CONFIG = {
   battery_threshold: 30,
-  decimals: false,
+  decimals: DecimalsState.UNTOUCHED,
   device_id: '',
   display_mode: DisplayMode.FULL,
   sensors: [
@@ -522,6 +522,11 @@ class FytaPlantCard extends LitElement {
     return parts[0];
   }
 
+  _formatDecimals(value, decimals = 0) {
+    const numberValue = Number(value);
+    return isNaN(numberValue) ? '' : numberValue.toFixed(decimals);
+  }
+
   _getPlantImageSrc(hass) {
     if (this.config.preferred_image === PreferredPlantImage.USER) {
       const userImageEntityId = this._otherEntityIds[SensorTypes.PLANT_IMAGE_USER];
@@ -538,11 +543,6 @@ class FytaPlantCard extends LitElement {
 
     return '';
   };
-
-  _formatNumberToString(value, decimals = 0) {
-    const numberValue = Number(value);
-    return isNaN(numberValue) ? '' : numberValue.toFixed(decimals);
-  }
 
   _handleEntity(id, hass) {
     const hassState = hass.states[id];
@@ -1112,7 +1112,7 @@ class FytaPlantCard extends LitElement {
       const sensorSettings = SENSOR_SETTINGS[sensorType];
       const sensorEntityId = this._measurementEntityIds[sensorType];
       const sensorValue = hass.states[sensorEntityId].state;
-      const formattedSensorValue = this.config.decimals === false ? sensorValue : this._formatNumberToString(sensorValue, this.config.decimals);
+      const formattedSensorValue = this.config.decimals === false ? sensorValue : this._formatDecimals(sensorValue, this.config.decimals);
 
       // Get proper units for display and tooltip
       const unitOfMeasurement = hass.states[sensorEntityId].attributes.unit_of_measurement || '';
